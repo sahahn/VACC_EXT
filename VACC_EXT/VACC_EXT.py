@@ -32,7 +32,7 @@ class VACC_EXT(Magics):
 
         password = getpass.getpass()
 
-        self.ssh.connect(config['host'],
+        self.ssh.connect(config['host'], 22,
                          username=config['username'],
                          password=password)
         del password
