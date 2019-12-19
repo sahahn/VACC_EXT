@@ -27,15 +27,14 @@ class VACC_EXT(Magics):
     def make_ssh_session(self):
 
         self.ssh = paramiko.SSHClient()
+
         self.ssh.load_system_host_keys()
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-        password = getpass.getpass()
-
         self.ssh.connect(config['host'], 22,
                          username=config['username'],
-                         password=password)
-        del password
+                         password=getpass.getpass(
+                            prompt='VACC Account Password (never saved!):'))
 
     def init_drs(self):
 
@@ -82,12 +81,12 @@ class VACC_EXT(Magics):
 
         return save + str(cnt)
 
-    def get_script_contents(self, host_loc, cell, save_key, ML_name):
+    def get_script_contents(self, save_name, cell, save_key, ML_name):
 
         c = []
         c.append('from ABCD_ML import Load')
 
-        load_line = ML_name + ' = Load(loc="' + host_loc + '", exp_name='
+        load_line = ML_name + ' = Load(loc="' + save_name + '", exp_name='
 
         if config['keep_run_logs']:
             load_line += '"' + save_key + '",'
@@ -140,7 +139,7 @@ class VACC_EXT(Magics):
         ML.Save(local_save_loc)
 
         # Get the script contents
-        script_contents = self.get_script_contents(host_save_loc, cell,
+        script_contents = self.get_script_contents(save_name, cell,
                                                    save_key, ML_name)
 
         # Generate the VACC scripts
