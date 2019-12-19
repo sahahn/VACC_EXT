@@ -107,6 +107,10 @@ class VACC_EXT(Magics):
         c += cell.split('\n')
         c.append('')
 
+        if config['save_obj']:
+            c.append(ML_name + '.Save(loc="' + save_name + '")')
+            c.append('')
+
         return c
 
     @cell_magic
@@ -182,7 +186,7 @@ class VACC_EXT(Magics):
 
         return
 
-    def collect(self, name, get_results=True, delete=False, _print=print):
+    def collect(self, name, delete=False, _print=print):
 
         self._print = _print
 
@@ -197,7 +201,7 @@ class VACC_EXT(Magics):
         else:
             output_file = relevant[0]
             results = self.job_done(name, output_file, host_files,
-                                    get_results, delete)
+                                    delete)
 
             return results
 
@@ -223,7 +227,7 @@ class VACC_EXT(Magics):
                 print('CPU Time Used:', time)
                 print('Job Id:', job_id)
 
-    def job_done(self, name, output_file, host_files, get_results, delete):
+    def job_done(self, name, output_file, host_files, delete):
 
         results = {}
         output_loc = os.path.join(config['host_dr'], output_file)
@@ -239,7 +243,7 @@ class VACC_EXT(Magics):
 
         # If the key name is in host_files, then it is the
         # ABCD_ML generated dr
-        if name in host_files and get_results:
+        if name in host_files:
 
             ftp = self.ssh.open_sftp()
 

@@ -27,6 +27,16 @@ config['keep_run_logs'] = True
 # results dict from each Evaluate or Test call
 config['save_results'] = True
 
+# If for some reason you want to save the ABCD_ML object
+# after the block of code has been run, I guess e.g., you
+# save some values in a class param, and want to recover it.
+# Or maybe you do all your data loading on the VACC then want to
+# recover that object, I don't know.
+# In those cases, you can set save_obj to True, and after the v_run
+# the saved copy of the ML object on the VACC will be overriden
+# with the object object whatever block of code was run.
+config['save_obj'] = False
+
 # Unless you have an up to date version of ABCD_ML installed
 # on your VACC account, leave this option as True,
 # as it will source sages ABCD_ML install before running.
@@ -37,7 +47,7 @@ config['source_sage'] = True
 
 # The number of processors to run your job with,
 # so you should set n_jobs within an Evaluate or Test call
-# to this number. 
+# to this number.
 config['ppn'] = '8'
 config['mem'] = '20gb'
 config['vmem'] = '30gb'
