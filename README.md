@@ -88,7 +88,7 @@ There are a few other things to know about the %%v_run command. The first argume
 a differing value for any of the config.py values (except username, and host as you've already established a connection)! These params can be specified following the name of the ABCD_ML object as 'param=value' pairs each seperated by a space (any order is okay). For example, we could specify some values as:
 
 ```python
-%%v_run ML ppn=8 mem=30gb walltime=30:00:00
+%%v_run ML ppn=8 mem='30gb' walltime='30:00:00'
 
 ML.Evaluate(model='dt')
 ```

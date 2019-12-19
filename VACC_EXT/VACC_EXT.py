@@ -127,7 +127,7 @@ class VACC_EXT(Magics):
         params = {}
         for p in split_line[1:]:
             param, value = p.split('=')
-            params[param] = value
+            params[param] = value.replace('"', '').replace("'", "")
 
         config.update(params)
 
