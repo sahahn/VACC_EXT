@@ -64,4 +64,5 @@ class VACC():
             f.write('\n')
 
             f.write('python ' + self.key + '.py')
+
             f.write('\n')
