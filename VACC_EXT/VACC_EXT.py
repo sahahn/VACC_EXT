@@ -251,6 +251,13 @@ class VACC_EXT(Magics):
                 print('CPU Time Used:', time)
                 print('Job Id:', job_id)
 
+                if stat = 'C':
+                    print('Something appears to have gone wrong,'
+                          ' as status is completed, but no VACC',
+                          ' output file was found!')
+                    print('Deleting job files! Please resubmit.')
+                    self.delete(name)
+
     def job_done(self, name, output_file, host_files, delete):
 
         results = {}
