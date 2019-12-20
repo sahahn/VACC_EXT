@@ -47,10 +47,26 @@ config['source_sage'] = True
 
 # The number of processors to run your job with,
 # so you should set n_jobs within an Evaluate or Test call
-# to this number.
+# to 2 * this number, as each proccesor has 2 cores. 
+# The maximum is ppn = 24! but you may have to wait
+# a long time to get this job in
 config['ppn'] = '8'
+
+# mem is memory, and vmem is virtual memory
+# in practice set vmem a bit higher then mem.
+# If you request too much memory it may take a
+# long time for the job to run, and in general
+# the more ppn, and n_jobs you have
+# the more mem and vmem you will need
+# so expiriment around to get the lowest
+# mem / vmem needed to run your job!
 config['mem'] = '20gb'
 config['vmem'] = '30gb'
+
+# The maximum time your job can take. 
+# The limit is 30:00:00, but if you expect
+# youre job will only take a few hours don't
+# put walltime as 30:00:00 every time.
 config['walltime'] = '20:00:00'
 
 # This param will likely always be kept as True

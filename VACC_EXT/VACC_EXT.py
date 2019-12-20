@@ -235,28 +235,38 @@ class VACC_EXT(Magics):
 
         print(name, 'not finished!')
 
-        stdin, stdout, stderr =\
-            self.ssh.exec_command('qstat')
+        # Set a flag to see if the job was found in qstat
+        found = False
 
-        lines = stdout.readlines()
+        lines = self.get_qstat_lines()
         for line in lines:
             status = [l for l in line.split(' ') if len(l.rstrip()) > 0]
 
             if status[1] == name:
+                found = True
+
                 job_id = status[0]
                 time = status[3]
                 stat = status[4]
 
-                print('Status:', stat)
-                print('CPU Time Used:', time)
-                print('Job Id:', job_id)
-
-                if stat = 'C':
+                if stat == 'C':
                     print('Something appears to have gone wrong,'
                           ' as status is completed, but no VACC',
                           ' output file was found!')
                     print('Deleting job files! Please resubmit.')
                     self.delete(name)
+
+                else:
+                    print('Status:', stat)
+                    print('CPU Time Used:', time)
+                    print('Job Id:', job_id)
+
+        if not found:
+            print('Something appears to have gone wrong,'
+                  ' as this job does not appear in qstat',
+                  ' and no output file was found!')
+            print('Deleting job files! Please resubmit.')
+            self.delete(name)
 
     def job_done(self, name, output_file, host_files, delete):
 
@@ -317,6 +327,65 @@ class VACC_EXT(Magics):
             self.delete(name)
 
         return results
+
+    def get_qstat_lines(self):
+
+        # Get all jobs that are running or in queue
+        stdin, stdout, stderr =\
+            self.ssh.exec_command('qstat')
+        lines = stdout.readlines()
+
+        return lines
+
+    def check_all(self):
+
+        # Get all finished jobs
+        host_files = self.get_current_host_files()
+        done = [h for h in host_files if '.o' in h and 'v_run' in h]
+
+        # Get all jobs in queue or running
+        running = []
+        queue = []
+        other = []
+
+        lines = self.get_qstat_lines()
+        for line in lines:
+            status = [l for l in line.split(' ') if len(l.rstrip()) > 0]
+            name = status[1]
+
+            if 'v_run' in name:
+                stat = status[4]
+
+                if stat == 'R':
+                    running.append([name, status[3]])
+                elif stat == 'Q':
+                    queue.append(name)
+                elif stat != 'C':
+                    other.append([name, stat])
+
+        if len(done) > 0:
+            print('The following jobs are finished:')
+            for d in done:
+                print(d.split('.o')[0])
+            print()
+
+        if len(running) > 0:
+            print('The following jobs are running:')
+            for r in running:
+                print(r[0], 'Cpu Time:', r[1])
+            print()
+
+        if len(queue) > 0:
+            print('The following jobs are in queue:')
+            for q in queue:
+                print(q)
+            print()
+
+        if len(other) > 0:
+            print('The following jobs have an unknown status')
+            for o in other:
+                print(o[0], 'Status:', o[1])
+            print()
 
 
 def connect():
