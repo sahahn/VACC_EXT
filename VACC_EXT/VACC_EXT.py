@@ -171,20 +171,44 @@ class VACC_EXT(Magics):
         stdin, stdout, stderr =\
             self.ssh.exec_command('cd ' + config['host_dr'] + ' && ' +
                                   'qsub ' + job_script)
-        output_lines = stdout.readlines()
-        output_lines = [o.strip() for o in output_lines]
-        output_lines = [o for o in output_lines if len(o) > 0]
 
-        print('Job submitted with message: ', end='')
-        for line in output_lines:
-            print(line)
+        stderr_lines = stderr.readlines()
+        stderr_lines = [o.strip() for o in stderr_lines]
+        stderr_lines = [o for o in stderr_lines if len(o) > 0]
 
-        # Can delete the job script right away
-        job_script_loc = os.path.join(config['host_dr'], save_key + '.script')
-        stdin, stdout, stderr =\
-            self.ssh.exec_command('rm ' + job_script_loc)
+        if len(stderr_lines) > 0:
+            print('Job submitted with error message: ', end='')
+
+            for line in stderr_lines:
+                print(line)
+
+            # Delete all
+            self.delete(save_key)
+
+        else:
+
+            output_lines = stdout.readlines()
+            output_lines = [o.strip() for o in output_lines]
+            output_lines = [o for o in output_lines if len(o) > 0]
+
+            print('Job submitted with message: ', end='')
+            for line in output_lines:
+                print(line)
+
+            # Can delete the job script right away
+            job_script_loc = os.path.join(config['host_dr'],
+                                          save_key + '.script')
+            stdin, stdout, stderr =\
+                self.ssh.exec_command('rm ' + job_script_loc)
 
         return
+
+    def delete(self, name):
+
+        to_delete = ['', '.py', '.ML', '.script']
+        for end in to_delete:
+            to_del = os.path.join(config['host_dr'], name + end)
+            _ = self.ssh.exec_command('rm -r ' + to_del)
 
     def collect(self, name, delete=False, _print=print):
 
@@ -283,11 +307,7 @@ class VACC_EXT(Magics):
 
         # If delete passed, delete VACC copy of things
         if delete:
-
-            to_delete = ['', '.py', '.ML']
-            for end in to_delete:
-                to_del = os.path.join(config['host_dr'], name + end)
-                _ = self.ssh.exec_command('rm -r ' + to_del)
+            self.delete(name)
 
         return results
 
