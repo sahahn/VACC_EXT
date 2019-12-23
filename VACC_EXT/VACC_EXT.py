@@ -34,7 +34,7 @@ class VACC_EXT(Magics):
         self.ssh.connect(config['host'], 22,
                          username=config['username'],
                          password=getpass.getpass(
-                            prompt='VACC Account Password (never saved!):'))
+                            prompt='VACC Password:'))
 
     def init_drs(self):
 

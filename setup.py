@@ -8,7 +8,7 @@ setup(name='ABCD_ML_VACC_EXT',
       author_email='sahahn@euvm.edu',
       license='MIT',
       packages=['VACC_EXT'],
-      install_requires=['paramiko', 'IPython'],
+      install_requires=['paramiko', 'IPython', 'cffi>=1.13'],
       test_suite='nose.collector',
       tests_require=['nose'],
       zip_safe=False)
