@@ -110,13 +110,11 @@ class VACC_EXT(Magics):
         if config['save_obj']:
             c.append(ML_name + '.Save(loc="' + save_name + '")')
             c.append('')
-
         return c
 
     @cell_magic
     @needs_local_scope
     def v_run(self, line, cell, local_ns=None):
-
         # Get name of object + object itself
         split_line = line.split(' ')
 
@@ -130,6 +128,16 @@ class VACC_EXT(Magics):
             params[param] = value.replace('"', '').replace("'", "")
 
         config.update(params)
+        self._run(ML, ML_name, cell)
+
+
+    def run(self, ML, ML_name, cell, **kwargs):
+
+       config.update(kwargs)
+       self._run(ML, ML_name, cell)
+
+
+    def _run(self, ML, ML_name, cell):
 
         # Get a valid save name
         save_key = self.get_free_save_name()

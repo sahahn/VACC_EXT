@@ -220,6 +220,30 @@ You will get the same output as before, but after returning it to you all of the
 
 Which is what you'll get if the job you are looking for doesn't exist, due to either never been run or in this case deleted.
 
+### Submit multiple jobs at once
+
+Alright, say you want to submit a loop of jobs over a number of parameters, the magic v_run command does not really lend itself to this task.
+Instead, you can use the connection class' (in this example VE) run method. run takes as parameters the ABCD_ML object, then the name of the ABCD_ML object, and then the
+lines the user wishes to run as one str. Notably, passing in longer commands in str format is a bit terrible, which is why the magic v_run function is so nice.
+Reccomended usage is therefore only in the case of loops, and passing most params through Set_Default_ML_Params, see the example below for what this looks like
+in an example exploring different choices of model.
+
+```python
+models = ['dt', 'elastic', 'rf']
+for model in models:
+    ML.Set_Default_ML_Params(model=model)
+    VE.run(ML=ML, ML_name='ML', cell='ML.Evaluate()')
+```
+
+### Check the status of your jobs
+
+It is likely that if you are submitting a number of jobs it will be a bit hard to keep track of which ones you have submitted,
+and further to know which ones are done or still running ect... this is why an extra class method check_all is provided. Example below.
+
+```python
+VE.check_all()
+```
+
 
 ### Final thoughts
 
