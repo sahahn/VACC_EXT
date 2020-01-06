@@ -47,9 +47,8 @@ config['source_sage'] = True
 
 # The number of processors to run your job with,
 # so you should set n_jobs within an Evaluate or Test call
-# to 2 * this number, as each proccesor has 2 cores. 
-# The maximum is ppn = 24! but you may have to wait
-# a long time to get this job in
+# this number. The maximum is ppn = 24! but you may have to wait
+# longer to get this job in!
 config['ppn'] = '8'
 
 # mem is memory, and vmem is virtual memory
@@ -60,10 +59,19 @@ config['ppn'] = '8'
 # the more mem and vmem you will need
 # so expiriment around to get the lowest
 # mem / vmem needed to run your job!
-config['mem'] = '20gb'
+config['mem'] = '26gb'
 config['vmem'] = '30gb'
 
-# The maximum time your job can take. 
+# Reccomendations for ppn, mem and vmem settings
+# for a reasonably sized expiriment
+# (e.g., with few subjects and/or datasets use less memory and
+# and with more then use more)
+
+# ppn=8 mem=26gb vmem=30gb can get a reasonable number running at once
+# ppn=16 mem=55gb vmem=65gb can get a few running at once
+# ppn=2 mem=10gb vmem=12gb can put in a bunch of these slow jobs
+
+# The maximum time your job can take.
 # The limit is 30:00:00, but if you expect
 # youre job will only take a few hours don't
 # put walltime as 30:00:00 every time.

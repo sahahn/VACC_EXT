@@ -130,12 +130,9 @@ class VACC_EXT(Magics):
         config.update(params)
         self._run(ML, ML_name, cell)
 
-
     def run(self, ML, ML_name, cell, **kwargs):
-
-       config.update(kwargs)
-       self._run(ML, ML_name, cell)
-
+        config.update(kwargs)
+        self._run(ML, ML_name, cell)
 
     def _run(self, ML, ML_name, cell):
 
