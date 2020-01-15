@@ -128,10 +128,12 @@ class VACC_EXT(Magics):
             params[param] = value.replace('"', '').replace("'", "")
 
         config.update(params)
+        self.init_drs()
         self._run(ML, ML_name, cell)
 
     def run(self, ML, ML_name, cell, **kwargs):
         config.update(kwargs)
+        self.init_drs()
         self._run(ML, ML_name, cell)
 
     def _run(self, ML, ML_name, cell):
