@@ -73,10 +73,7 @@ class VACC_EXT(Magics):
         for ext in self.exts:
 
             while os.path.exists(os.path.join(
-             self.local_dr, save + str(cnt) + ext)):
-                cnt += 1
-
-            while save + str(cnt) + ext in host_files:
+             self.local_dr, save + str(cnt) + ext)) or (save + str(cnt) + ext in host_files):
                 cnt += 1
 
         return save + str(cnt)
