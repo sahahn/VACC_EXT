@@ -214,7 +214,8 @@ class VACC_EXT(Magics):
             to_del = os.path.join(config['host_dr'], name + end)
             _ = self.ssh.exec_command('rm -r ' + to_del)
 
-    def collect(self, name, delete=False, _print=print):
+    def collect(self, name, delete=False, _print=print, **kwargs):
+        config.update(kwargs)
 
         self._print = _print
 
@@ -341,7 +342,8 @@ class VACC_EXT(Magics):
 
         return lines
 
-    def check_all(self):
+    def check_all(self, **kwargs):
+        config.update(kwargs)
 
         # Get all finished jobs
         host_files = self.get_current_host_files()
