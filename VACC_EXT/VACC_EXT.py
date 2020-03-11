@@ -199,12 +199,6 @@ class VACC_EXT(Magics):
             for line in output_lines:
                 print(line)
 
-            # Can delete the job script right away
-            job_script_loc = os.path.join(config['host_dr'],
-                                          save_key + '.script')
-            stdin, stdout, stderr =\
-                self.ssh.exec_command('rm ' + job_script_loc)
-
         return
 
     def delete(self, name):
@@ -214,7 +208,14 @@ class VACC_EXT(Magics):
             to_del = os.path.join(config['host_dr'], name + end)
             _ = self.ssh.exec_command('rm -r ' + to_del)
 
-    def collect(self, name, delete=False, _print=print, **kwargs):
+    def soft_delete(self, name):
+        
+        to_delete = ['.py', '.ML', '.script']
+        for end in to_delete:
+            to_del = os.path.join(config['host_dr'], name + end)
+            _ = self.ssh.exec_command('rm ' + to_del)
+
+    def collect(self, name, delete=False, soft_delete=False, _print=print, **kwargs):
         config.update(kwargs)
 
         self._print = _print
@@ -222,7 +223,7 @@ class VACC_EXT(Magics):
         host_files = self.get_current_host_files()
         relevant = [h for h in host_files if name + '.o' in h]
 
-        if name + '.ML' not in host_files:
+        if (name + '.ML' not in host_files) and (name not in host_files):
             print('Job does not exist!')
 
         elif len(relevant) == 0:
@@ -230,7 +231,7 @@ class VACC_EXT(Magics):
         else:
             output_file = relevant[0]
             results = self.job_done(name, output_file, host_files,
-                                    delete)
+                                    delete, soft_delete)
 
             return results
 
@@ -270,10 +271,8 @@ class VACC_EXT(Magics):
             print('Something appears to have gone wrong,'
                   ' as this job does not appear in qstat',
                   ' and no output file was found!')
-            print('Deleting job files! Please resubmit.')
-            self.delete(name)
 
-    def job_done(self, name, output_file, host_files, delete):
+    def job_done(self, name, output_file, host_files, delete, soft_delete):
 
         results = {}
         output_loc = os.path.join(config['host_dr'], output_file)
@@ -330,6 +329,8 @@ class VACC_EXT(Magics):
         # If delete passed, delete VACC copy of things
         if delete:
             self.delete(name)
+        if soft_delete:
+            self.soft_delete(name)
 
         return results
 

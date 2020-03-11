@@ -75,7 +75,7 @@ config['vmem'] = '30gb'
 # The limit is 30:00:00, but if you expect
 # youre job will only take a few hours don't
 # put walltime as 30:00:00 every time.
-config['walltime'] = '20:00:00'
+config['walltime'] = '30:00:00'
 
 # This param will likely always be kept as True
 # unless the job you are running needs only a very small
