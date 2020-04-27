@@ -81,7 +81,7 @@ class VACC_EXT(Magics):
     def get_script_contents(self, save_name, cell, save_key, ML_name):
 
         c = []
-        c.append('from ABCD_ML import Load')
+        c.append('from ABCD_ML import *')
 
         load_line = ML_name + ' = Load(loc="' + save_name + '", exp_name='
 
@@ -92,6 +92,7 @@ class VACC_EXT(Magics):
 
         load_line += ' log_dr="", verbose=True, notebook=False)'
         c.append(load_line)
+        c.append("ML.mp_context = 'fork'")
         c.append('')
 
         verbose_line = ML_name + '.Set_Default_ML_Verbosity('
