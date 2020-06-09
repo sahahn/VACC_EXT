@@ -5,6 +5,8 @@ from .config import config
 import os
 import shutil
 import pickle as pkl
+from joblib.externals import cloudpickle as cpkl
+
 from IPython.core.magic import (Magics, magics_class, line_magic,
                                 cell_magic, line_cell_magic, needs_local_scope)
 from .VACC import VACC
@@ -38,7 +40,7 @@ class VACC_EXT(Magics):
 
     def init_drs(self):
 
-        self.exts = ['.ML', '.py', '.script']
+        self.exts = ['.ML', '.py', '.script', '.extra']
 
         if config['temp_local_dr'] == '':
             self.local_dr = os.getcwd()
@@ -78,10 +80,18 @@ class VACC_EXT(Magics):
 
         return save + str(cnt)
 
-    def get_script_contents(self, save_name, cell, save_key, ML_name):
+    def get_script_contents(self, save_name, cell, save_key,
+                            ML_name, extra_save_name):
 
         c = []
         c.append('from ABCD_ML import *')
+        c.append('from joblib.externals import cloudpickle as cpkl')
+        c.append('')
+        c.append('with open("' + extra_save_name + '", "rb") as f:')
+        c.append('    extra = cpkl.load(f)')
+        c.append('for e in extra:')
+        c.append('    vars()[e] = extra[e]')
+        c.append('')
 
         load_line = ML_name + ' = Load(loc="' + save_name + '", exp_name='
 
@@ -117,6 +127,10 @@ class VACC_EXT(Magics):
         split_line = line.split(' ')
 
         ML_name = split_line[0].strip()
+
+        # Grab ML object from locals
+        # Even if loading, ensures thats script is
+        # correct
         ML = local_ns[ML_name]
 
         # Proc rest of params
@@ -125,31 +139,53 @@ class VACC_EXT(Magics):
             param, value = p.split('=')
             params[param] = value.replace('"', '').replace("'", "")
 
+        if 'ML_loc' in params:
+            ML_loc = params.pop('ML_loc')
+        else:
+            ML_loc = None
+
+        # Proc extra
+        if 'extra' in params:
+            extra_vars = params.pop('extra').split(',')
+            extra = {var: local_ns[var] for var in extra_vars}
+        else:
+            extra = {}
+
         config.update(params)
         self.init_drs()
-        self._run(ML, ML_name, cell)
+        self._run(ML, ML_name, cell, ML_loc, extra)
 
-    def run(self, ML, ML_name, cell, **kwargs):
+
+    def run(self, ML, ML_name, cell, ML_loc=None,
+            extra=None, **kwargs):
         config.update(kwargs)
         self.init_drs()
-        self._run(ML, ML_name, cell)
+        self._run(ML, ML_name, cell, ML_loc, extra)
 
-    def _run(self, ML, ML_name, cell):
+    def _run(self, ML, ML_name, cell, ML_loc, extra):
 
         # Get a valid save name
         save_key = self.get_free_save_name()
-        save_name = save_key + '.ML'
         print('Run Name: ', save_key)
 
-        local_save_loc = os.path.join(self.local_dr, save_name)
-        host_save_loc = os.path.join(config['host_dr'], save_name)
+        # If no ML_loc, save ML
+        if ML_loc is None:
+            save_name = save_key + '.ML'
+            local_save_loc = os.path.join(self.local_dr, save_name)
+            ML.Save(local_save_loc)
 
-        # Save the current ML object
-        ML.Save(local_save_loc)
+        else:
+            save_name = ML_loc
+
+        # Save extra always, just empty dict if None
+        extra_save_name = save_key + '.extra'
+        with open(os.path.join(self.local_dr, extra_save_name), 'wb') as f:
+            cpkl.dump(extra, f)
 
         # Get the script contents
         script_contents = self.get_script_contents(save_name, cell,
-                                                   save_key, ML_name)
+                                                   save_key, ML_name,
+                                                   extra_save_name)
 
         # Generate the VACC scripts
         VACC(script_contents, key=save_key, local_dr=self.local_dr,
@@ -161,6 +197,9 @@ class VACC_EXT(Magics):
         ftp = self.ssh.open_sftp()
 
         for ext in self.exts:
+
+            if ML_loc is not None and ext == '.ML':
+                continue
 
             local_save_loc = os.path.join(self.local_dr, save_key + ext)
             host_save_loc = os.path.join(config['host_dr'], save_key + ext)
@@ -204,14 +243,14 @@ class VACC_EXT(Magics):
 
     def delete(self, name):
 
-        to_delete = ['', '.py', '.ML', '.script']
+        to_delete = ['', '.py', '.ML', '.script', '.extra']
         for end in to_delete:
             to_del = os.path.join(config['host_dr'], name + end)
             _ = self.ssh.exec_command('rm -r ' + to_del)
 
     def soft_delete(self, name):
         
-        to_delete = ['.py', '.ML', '.script']
+        to_delete = ['.py', '.ML', '.script', '.extra']
         for end in to_delete:
             to_del = os.path.join(config['host_dr'], name + end)
             _ = self.ssh.exec_command('rm ' + to_del)
